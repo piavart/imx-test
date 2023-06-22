@@ -48,40 +48,43 @@ const provider = new InfuraProvider(
   INFURA_API_KEY,
 );
 
+(async () => {
+  // Create ETH signer with ETH provate key as BytesLike
+  const ETH_SIGNER = new Wallet(ETH_PRIVATE_KEY as BytesLike).connect(provider);
 
-// Create ETH signer with ETH provate key as BytesLike
-const ETH_SIGNER = new Wallet(ETH_PRIVATE_KEY as BytesLike).connect(provider);
+  //Generate Stark Private Key in legacy mode. Supported in latest 1.0.0 release
+  const STARK_PRIVATE_KEY = await generateLegacyStarkPrivateKey(ETH_SIGNER)
 
-//Generate Stark Private Key in legacy mode. Supported in latest 1.0.0 release
-const STARK_PRIVATE_KEY = await generateLegacyStarkPrivateKey(ETH_SIGNER)
+  //Create a Stark Signer
+  const STARK_SIGNER = createStarkSigner(STARK_PRIVATE_KEY)
 
-//Create a Stark Signer
-const STARK_SIGNER = createStarkSigner(STARK_PRIVATE_KEY)
+  //Get public key from stark signer
+  const STARK_PUBLIC_KEY = STARK_SIGNER.getAddress()
 
-//Get public key from stark signer
-const STARK_PUBLIC_KEY = STARK_SIGNER.getAddress()
+  console.log('STARK_PUBLIC_KEY :>> ', STARK_PUBLIC_KEY);
 
-console.log('STARK_PUBLIC_KEY :>> ', STARK_PUBLIC_KEY);
+  const walletConnection: WalletConnection = {
+    ethSigner: ETH_SIGNER,
+    starkSigner: STARK_SIGNER,
+  };
 
-const walletConnection: WalletConnection = {
-  ethSigner: ETH_SIGNER,
-  starkSigner: STARK_SIGNER,
-};
+  const imxClient = new ImmutableX(Config.SANDBOX);
 
-const imxClient = new ImmutableX(Config.SANDBOX);
+  const batchTransferResponse = await imxClient.batchNftTransfer(
+      walletConnection,
+      [
+        {
+        receiver: '0xED1a1BaC4f0E02dD04Ddd33ff1338d14e3F67e25',
+        tokenId: '2',
+        tokenAddress: '0xEd539C94d14Af10654b6A32cD12b5548b0d158B3',
+      },
+    ],
+  );
 
-const batchTransferResponse = await imxClient.batchNftTransfer(
-  walletConnection,
-  [
-    {
-      receiver: '0xED1a1BaC4f0E02dD04Ddd33ff1338d14e3F67e25',
-      tokenId: '2',
-      tokenAddress: '0xEd539C94d14Af10654b6A32cD12b5548b0d158B3',
-    },
-  ],
-);
+  // Throw Error
+  // [Error]: unable to verify stark signature 0x03a04cafc5f16ee15039358514467192fa0d68e2bc57043f1dfa120b723b570f0218d2a95ab328f66feb3652f5d7d1e162790ff175e5bbc04043bc035dc1ca6b
 
-// Throw Error
-// [Error]: unable to verify stark signature 0x03a04cafc5f16ee15039358514467192fa0d68e2bc57043f1dfa120b723b570f0218d2a95ab328f66feb3652f5d7d1e162790ff175e5bbc04043bc035dc1ca6b
+  console.log('batchTransferResponse :>> ', batchTransferResponse);;
 
-console.log('batchTransferResponse :>> ', batchTransferResponse);;
+});
+

@@ -12,6 +12,8 @@ import * as dotenv from 'dotenv'
 
 // Http client for API interactions
 import { InfuraProvider } from '@ethersproject/providers';
+export const COLLECTION_ADDRESS = '0xEd539C94d14Af10654b6A32cD12b5548b0d158B3';
+
 
 
 // Env variable functions
@@ -48,37 +50,40 @@ const provider = new InfuraProvider(
   INFURA_API_KEY,
 );
 
+(async () => {
 
-// Create ETH signer with ETH provate key as BytesLike
-const ETH_SIGNER = new Wallet(ETH_PRIVATE_KEY as BytesLike).connect(provider);
+  // Create ETH signer with ETH provate key as BytesLike
+  const ETH_SIGNER = new Wallet(ETH_PRIVATE_KEY as BytesLike).connect(provider);
 
-//Generate Stark Private Key in legacy mode. Supported in latest 1.0.0 release
-const STARK_PRIVATE_KEY = await generateLegacyStarkPrivateKey(ETH_SIGNER)
+  //Generate Stark Private Key in legacy mode. Supported in latest 1.0.0 release
+  const STARK_PRIVATE_KEY = await generateLegacyStarkPrivateKey(ETH_SIGNER)
 
-//Create a Stark Signer
-const STARK_SIGNER = createStarkSigner(STARK_PRIVATE_KEY)
+  //Create a Stark Signer
+  const STARK_SIGNER = createStarkSigner(STARK_PRIVATE_KEY)
 
-//Get public key from stark signer
-const STARK_PUBLIC_KEY = STARK_SIGNER.getAddress()
+  //Get public key from stark signer
+  const STARK_PUBLIC_KEY = STARK_SIGNER.getAddress()
 
-console.log('STARK_PUBLIC_KEY :>> ', STARK_PUBLIC_KEY);
+  console.log('STARK_PUBLIC_KEY :>> ', STARK_PUBLIC_KEY);
 
-const walletConnection: WalletConnection = {
-  ethSigner: ETH_SIGNER,
-  starkSigner: STARK_SIGNER,
-};
+  const walletConnection: WalletConnection = {
+    ethSigner: ETH_SIGNER,
+    starkSigner: STARK_SIGNER,
+  };
 
-const imxClient = new ImmutableX(Config.SANDBOX);
+  const imxClient = new ImmutableX(Config.SANDBOX);
 
-const batchTransferResponse = await imxClient.batchNftTransfer(
-  walletConnection,
-  [
-    {
-      receiver: '0x1ed81e094cc225efd6ad4c2e9955e282ad02d2cf',
-      tokenId: '162',
-      tokenAddress: '0x0a31953c6de42405e0335f8b0a48fab4d1679442',
-    },
-  ],
-);
+  const batchTransferResponse = await imxClient.batchNftTransfer(
+    walletConnection,
+    [
+      {
+        receiver: '0xED1a1BaC4f0E02dD04Ddd33ff1338d14e3F67e25',
+        tokenId: '4',
+        tokenAddress: COLLECTION_ADDRESS,
+        // tokenAddress: '0x0a31953c6de42405e0335f8b0a48fab4d1679442',
+      },
+    ],
+  );
 
-console.log('batchTransferResponse :>> ', batchTransferResponse);;
+  console.log('batchTransferResponse :>> ', batchTransferResponse);;
+})()

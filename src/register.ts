@@ -48,29 +48,35 @@ const provider = new InfuraProvider(
   INFURA_API_KEY,
 );
 
+(async () => {
+  console.log('123 :>> ', 123);
+    // Create ETH signer with ETH provate key as BytesLike
+  const ETH_SIGNER = new Wallet(ETH_PRIVATE_KEY as BytesLike).connect(provider);
 
-// Create ETH signer with ETH provate key as BytesLike
-const ETH_SIGNER = new Wallet(ETH_PRIVATE_KEY as BytesLike).connect(provider);
+  //Generate Stark Private Key in legacy mode. Supported in latest 1.0.0 release
+  const STARK_PRIVATE_KEY = await generateLegacyStarkPrivateKey(ETH_SIGNER)
 
-//Generate Stark Private Key in legacy mode. Supported in latest 1.0.0 release
-const STARK_PRIVATE_KEY = await generateLegacyStarkPrivateKey(ETH_SIGNER)
+  //Create a Stark Signer
+  const STARK_SIGNER = createStarkSigner(STARK_PRIVATE_KEY)
 
-//Create a Stark Signer
-const STARK_SIGNER = createStarkSigner(STARK_PRIVATE_KEY)
+  //Get public key from stark signer
+  const STARK_PUBLIC_KEY = STARK_SIGNER.getAddress()
 
-//Get public key from stark signer
-const STARK_PUBLIC_KEY = STARK_SIGNER.getAddress()
+  console.log('STARK_PUBLIC_KEY :>> ', STARK_PUBLIC_KEY);
 
-console.log('STARK_PUBLIC_KEY :>> ', STARK_PUBLIC_KEY);
+  const walletConnection: WalletConnection = {
+    ethSigner: ETH_SIGNER,
+    starkSigner: STARK_SIGNER,
+  };
 
-const walletConnection: WalletConnection = {
-  ethSigner: ETH_SIGNER,
-  starkSigner: STARK_SIGNER,
-};
+  const imxClient = new ImmutableX(Config.SANDBOX);
 
-const imxClient = new ImmutableX(Config.SANDBOX);
+  const res = await imxClient.registerOffchain({
+    ethSigner: ETH_SIGNER,
+    starkSigner: STARK_SIGNER
+  });
 
-imxClient.registerOffchain({
-  ethSigner: ETH_SIGNER,
-  starkSigner: STARK_SIGNER
-});
+  console.log('res :>> ', res);
+})();
+
+
